@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lo-Fi Focus Space</title>
     <style>
-        /* --- THE CORE VIBE (CSS) --- */
+        /* --- THE CORE VIBE --- */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
         * {
@@ -16,7 +16,6 @@
         }
 
         body {
-            /* Default Background: Cozy Cafe vibe from Unsplash */
             background: url('https://images.unsplash.com/photo-1501339817388-d5937807ac02?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #fff;
@@ -28,7 +27,6 @@
             transition: background 0.5s ease;
         }
 
-        /* The Rain Overlay Effect */
         .rain-overlay {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -39,7 +37,6 @@
             z-index: 1;
         }
 
-        /* Top Bar */
         header {
             width: 100%;
             padding: 20px;
@@ -61,7 +58,6 @@
         }
         .vibe-search input::placeholder { color: #ddd; }
 
-        /* Widget Grid */
         .dashboard {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -72,7 +68,6 @@
             z-index: 2;
         }
 
-        /* Glassmorphism Widget Style */
         .widget {
             background: rgba(25, 25, 25, 0.4);
             backdrop-filter: blur(15px);
@@ -86,7 +81,6 @@
 
         h2 { margin-bottom: 15px; font-weight: 600; }
 
-        /* Buttons & Inputs */
         button {
             background: rgba(255, 255, 255, 0.2);
             border: none;
@@ -99,23 +93,33 @@
         }
         button:hover { background: rgba(255, 255, 255, 0.4); }
         
-        input[type="text"] {
-            width: 70%;
+        input[type="text"], input[type="number"] {
             padding: 10px;
             border-radius: 10px;
             border: none;
             outline: none;
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
         }
 
-        /* Timer Specifics */
+        /* Pomodoro Timer Tweaks */
         #time-display {
             font-size: 3rem;
             font-weight: bold;
-            margin: 20px 0;
+            margin: 10px 0;
             letter-spacing: 2px;
         }
+        .timer-settings {
+            margin-bottom: 15px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            align-items: center;
+        }
+        .timer-settings input { width: 60px; padding: 5px; text-align: center; }
 
-        /* To-Do Specifics */
+        /* To-Do Tweaks */
         ul { list-style: none; margin-top: 15px; text-align: left; }
         li {
             background: rgba(255, 255, 255, 0.1);
@@ -123,18 +127,23 @@
             margin-bottom: 8px;
             border-radius: 8px;
             display: flex;
-            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            transition: opacity 0.3s ease;
+        }
+        /* Make the checkbox look a bit nicer */
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
             cursor: pointer;
         }
-        .completed { text-decoration: line-through; opacity: 0.5; }
 
-        /* Spotify Iframe */
-        #spotify-frame {
+        /* Radio Iframe */
+        .radio-frame {
             width: 100%;
-            height: 152px;
+            height: 200px;
             border-radius: 12px;
-            margin-top: 15px;
-            display: none;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -153,25 +162,27 @@
         
         <div class="widget">
             <h2>⏱️ Pomodoro</h2>
+            <div class="timer-settings">
+                <label>Focus: <input type="number" id="focus-mins" value="25" min="1"></label>
+                <label>Break: <input type="number" id="break-mins" value="5" min="1"></label>
+            </div>
             <div id="time-display">25:00</div>
-            <button onclick="startTimer()">Start</button>
+            <button onclick="startTimer(true)">Focus</button>
+            <button onclick="startTimer(false)">Break</button>
             <button onclick="pauseTimer()">Pause</button>
-            <button onclick="resetTimer()">Reset</button>
         </div>
 
         <div class="widget">
             <h2>📝 Tasks</h2>
-            <input type="text" id="task-input" placeholder="What needs doing?">
+            <input type="text" id="task-input" placeholder="What needs doing?" style="width: 70%;">
             <button onclick="addTask()">Add</button>
             <ul id="task-list"></ul>
         </div>
 
         <div class="widget">
-            <h2>🎵 Sound Station</h2>
-            <p style="font-size: 0.8rem; margin-bottom: 10px;">Paste a Spotify Playlist Link:</p>
-            <input type="text" id="spotify-input" placeholder="https://open.spotify.com/...">
-            <button onclick="loadSpotify()">Load</button>
-            <iframe id="spotify-frame" src="" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+            <h2>🎵 Lo-Fi Radio</h2>
+            <p style="font-size: 0.8rem; margin-bottom: 10px;">24/7 Chill Beats to Study To</p>
+            <iframe class="radio-frame" src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0" title="LoFi Stream" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
 
     </div>
@@ -195,26 +206,38 @@
             }
         });
 
-        // --- 2. TIMER LOGIC ---
-        let timeLeft = 25 * 60; // 25 minutes in seconds
+        // --- 2. POMODORO LOGIC ---
+        let timeLeft;
         let timerId = null;
+        let isFocusMode = true;
         const timeDisplay = document.getElementById('time-display');
+        const focusInput = document.getElementById('focus-mins');
+        const breakInput = document.getElementById('break-mins');
 
-        function updateDisplay() {
-            const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-            const secs = (timeLeft % 60).toString().padStart(2, '0');
+        // Set initial display
+        updateDisplay(focusInput.value * 60);
+
+        function updateDisplay(seconds) {
+            const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const secs = (seconds % 60).toString().padStart(2, '0');
             timeDisplay.textContent = `${mins}:${secs}`;
         }
 
-        function startTimer() {
-            if (timerId !== null) return;
+        function startTimer(isFocus) {
+            if (timerId !== null) clearInterval(timerId); // Stop current timer if running
+            
+            // Set time based on which button they clicked
+            let minutes = isFocus ? focusInput.value : breakInput.value;
+            timeLeft = parseInt(minutes) * 60;
+            updateDisplay(timeLeft);
+
             timerId = setInterval(() => {
                 timeLeft--;
-                updateDisplay();
-                if (timeLeft === 0) {
+                updateDisplay(timeLeft);
+                if (timeLeft <= 0) {
                     clearInterval(timerId);
                     timerId = null;
-                    alert("Time's up! Take a break.");
+                    alert(isFocus ? "Focus time is up! Take a break." : "Break is over! Back to work.");
                 }
             }, 1000);
         }
@@ -224,12 +247,6 @@
             timerId = null;
         }
 
-        function resetTimer() {
-            pauseTimer();
-            timeLeft = 25 * 60;
-            updateDisplay();
-        }
-
         // --- 3. TO-DO LIST LOGIC ---
         function addTask() {
             const input = document.getElementById('task-input');
@@ -237,28 +254,30 @@
             if (text === "") return;
 
             const li = document.createElement('li');
-            li.textContent = text;
-            li.onclick = function() {
-                this.classList.toggle('completed');
+            
+            // Create the checkbox
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            
+            // Logic to delete the task when checked
+            checkbox.onchange = function() {
+                if(this.checked) {
+                    li.style.opacity = '0'; // Cool fade out effect
+                    setTimeout(() => li.remove(), 300); // Wait 0.3s then delete
+                }
             };
 
-            document.getElementById('task-list').appendChild(li);
-            input.value = "";
-        }
+            // Create the text span
+            const taskText = document.createElement('span');
+            taskText.textContent = text;
 
-        // --- 4. SPOTIFY LOGIC ---
-        function loadSpotify() {
-            const inputUrl = document.getElementById('spotify-input').value;
-            const iframe = document.getElementById('spotify-frame');
+            // Put it all together
+            li.appendChild(checkbox);
+            li.appendChild(taskText);
+            document.getElementById('task-list').appendChild(li);
             
-            // Convert standard Spotify URL to embed URL
-            if(inputUrl.includes('spotify.com')) {
-                const embedUrl = inputUrl.replace("open.spotify.com", "open.spotify.com/embed");
-                iframe.src = embedUrl;
-                iframe.style.display = 'block';
-            } else {
-                alert("Please paste a valid Spotify link!");
-            }
+            // Clear input box
+            input.value = "";
         }
     </script>
 </body>
