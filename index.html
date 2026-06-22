@@ -37,16 +37,25 @@
             z-index: 1;
         }
 
+        /* --- HEADER & CUSTOMIZATION CONTROLS --- */
         header {
             width: 100%;
-            padding: 20px;
+            padding: 20px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             z-index: 2;
+            flex-wrap: wrap;
+            gap: 15px;
         }
 
-        .vibe-search input {
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .header-controls input[type="text"] {
             padding: 10px 20px;
             border-radius: 20px;
             border: none;
@@ -54,17 +63,46 @@
             color: #fff;
             backdrop-filter: blur(10px);
             outline: none;
-            width: 250px;
+            width: 180px;
         }
-        .vibe-search input::placeholder { color: #ddd; }
+        .header-controls input[type="text"]::placeholder { color: #ddd; }
 
+        /* The Color Picker Box */
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            padding: 2px;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
+
+        /* The Upload Button */
+        .custom-file-upload {
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.3s;
+        }
+        .custom-file-upload:hover { background: rgba(255, 255, 255, 0.4); }
+
+        /* --- DASHBOARD WIDGETS --- */
         .dashboard {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
             width: 90%;
             max-width: 1200px;
-            margin-top: 50px;
+            margin-top: 20px;
             z-index: 2;
         }
 
@@ -93,7 +131,7 @@
         }
         button:hover { background: rgba(255, 255, 255, 0.4); }
         
-        input[type="text"], input[type="number"] {
+        .widget input[type="text"], .widget input[type="number"] {
             padding: 10px;
             border-radius: 10px;
             border: none;
@@ -120,7 +158,7 @@
         .timer-settings input { width: 60px; padding: 5px; text-align: center; }
 
         /* To-Do Tweaks */
-        ul { list-style: none; margin-top: 15px; text-align: left; }
+        ul { list-style: none; margin-top: 15px; text-align: left; max-height: 180px; overflow-y: auto; }
         li {
             background: rgba(255, 255, 255, 0.1);
             padding: 10px;
@@ -131,19 +169,15 @@
             gap: 10px;
             transition: opacity 0.3s ease;
         }
-        /* Make the checkbox look a bit nicer */
-        input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-        }
+        input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
-        /* Radio Iframe */
-        .radio-frame {
+        /* YouTube Iframe */
+        .yt-frame {
             width: 100%;
-            height: 200px;
+            height: 160px;
             border-radius: 12px;
             margin-top: 10px;
+            display: none;
         }
     </style>
 </head>
@@ -153,8 +187,13 @@
 
     <header>
         <h1>🎧 Focus Space</h1>
-        <div class="vibe-search">
-            <input type="text" id="vibe-input" placeholder="Type 'rain' or 'neon'...">
+        <div class="header-controls">
+            <input type="text" id="vibe-input" placeholder="Type 'rain' or 'clear'...">
+            
+            <input type="color" id="bg-color" title="Change Background Color">
+            
+            <label for="bg-upload" class="custom-file-upload">🖼️ Upload Image</label>
+            <input type="file" id="bg-upload" accept="image/*" style="display: none;">
         </div>
     </header>
 
@@ -180,41 +219,56 @@
         </div>
 
         <div class="widget">
-            <h2>🎵 Lo-Fi Radio</h2>
-            <p style="font-size: 0.8rem; margin-bottom: 10px;">24/7 Chill Beats to Study To</p>
-            <iframe class="radio-frame" src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0" title="LoFi Stream" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <h2>🎵 Music Player</h2>
+            <p style="font-size: 0.8rem; margin-bottom: 10px;">Paste ANY YouTube link below:</p>
+            <input type="text" id="yt-input" placeholder="https://youtube.com/watch?v=..." style="width: 70%;">
+            <button onclick="loadYouTube()">Play</button>
+            <iframe id="yt-frame" class="yt-frame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
 
     </div>
 
     <script>
-        // --- 1. VIBE SEARCH LOGIC ---
-        const vibeInput = document.getElementById('vibe-input');
+        // --- 1. BACKGROUND CUSTOMIZATION LOGIC ---
         const body = document.body;
         const rainOverlay = document.getElementById('rain');
-
-        vibeInput.addEventListener('input', (e) => {
+        
+        // Vibe Search (Rain effect)
+        document.getElementById('vibe-input').addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
             if (val.includes('rain')) {
                 rainOverlay.style.display = 'block';
-            } else if (val.includes('neon') || val.includes('cyberpunk')) {
-                body.style.backgroundImage = "url('https://images.unsplash.com/photo-1555861496-faa3eafcb220?q=80&w=2073&auto=format&fit=crop')";
-                rainOverlay.style.display = 'none';
             } else if (val.includes('clear')) {
-                body.style.backgroundImage = "url('https://images.unsplash.com/photo-1501339817388-d5937807ac02?q=80&w=2070&auto=format&fit=crop')";
                 rainOverlay.style.display = 'none';
+            }
+        });
+
+        // Color Picker
+        document.getElementById('bg-color').addEventListener('input', (e) => {
+            body.style.background = e.target.value; // sets solid color
+            rainOverlay.style.display = 'none'; // clear rain to see color better
+        });
+
+        // Image Upload
+        document.getElementById('bg-upload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    body.style.background = `url('${event.target.result}') no-repeat center center fixed`;
+                    body.style.backgroundSize = 'cover';
+                };
+                reader.readAsDataURL(file); // Converts image so the browser can display it
             }
         });
 
         // --- 2. POMODORO LOGIC ---
         let timeLeft;
         let timerId = null;
-        let isFocusMode = true;
         const timeDisplay = document.getElementById('time-display');
         const focusInput = document.getElementById('focus-mins');
         const breakInput = document.getElementById('break-mins');
 
-        // Set initial display
         updateDisplay(focusInput.value * 60);
 
         function updateDisplay(seconds) {
@@ -224,9 +278,8 @@
         }
 
         function startTimer(isFocus) {
-            if (timerId !== null) clearInterval(timerId); // Stop current timer if running
+            if (timerId !== null) clearInterval(timerId); 
             
-            // Set time based on which button they clicked
             let minutes = isFocus ? focusInput.value : breakInput.value;
             timeLeft = parseInt(minutes) * 60;
             updateDisplay(timeLeft);
@@ -255,29 +308,45 @@
 
             const li = document.createElement('li');
             
-            // Create the checkbox
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            
-            // Logic to delete the task when checked
             checkbox.onchange = function() {
                 if(this.checked) {
-                    li.style.opacity = '0'; // Cool fade out effect
-                    setTimeout(() => li.remove(), 300); // Wait 0.3s then delete
+                    li.style.opacity = '0';
+                    setTimeout(() => li.remove(), 300); 
                 }
             };
 
-            // Create the text span
             const taskText = document.createElement('span');
             taskText.textContent = text;
 
-            // Put it all together
             li.appendChild(checkbox);
             li.appendChild(taskText);
             document.getElementById('task-list').appendChild(li);
             
-            // Clear input box
             input.value = "";
+        }
+
+        // --- 4. YOUTUBE LOGIC ---
+        function loadYouTube() {
+            const input = document.getElementById('yt-input').value;
+            const iframe = document.getElementById('yt-frame');
+            
+            let videoId = "";
+            
+            // Extracts the 11-character video ID from standard or share links
+            if (input.includes("v=")) {
+                videoId = input.split("v=")[1].substring(0, 11);
+            } else if (input.includes("youtu.be/")) {
+                videoId = input.split("youtu.be/")[1].substring(0, 11);
+            }
+            
+            if (videoId) {
+                iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                iframe.style.display = "block";
+            } else {
+                alert("Please paste a valid YouTube link! Example: https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+            }
         }
     </script>
 </body>
