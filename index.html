@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lo-Fi Focus Space</title>
+    <style>
+        /* --- THE CORE VIBE (CSS) --- */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            /* Default Background: Cozy Cafe vibe from Unsplash */
+            background: url('https://images.unsplash.com/photo-1501339817388-d5937807ac02?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
+            background-size: cover;
+            color: #fff;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden;
+            transition: background 0.5s ease;
+        }
+
+        /* The Rain Overlay Effect */
+        .rain-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://media.giphy.com/media/Il9f7ZhytEiI0/giphy.gif') center/cover;
+            opacity: 0.3;
+            pointer-events: none;
+            display: none;
+            z-index: 1;
+        }
+
+        /* Top Bar */
+        header {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 2;
+        }
+
+        .vibe-search input {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            outline: none;
+            width: 250px;
+        }
+        .vibe-search input::placeholder { color: #ddd; }
+
+        /* Widget Grid */
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 90%;
+            max-width: 1200px;
+            margin-top: 50px;
+            z-index: 2;
+        }
+
+        /* Glassmorphism Widget Style */
+        .widget {
+            background: rgba(25, 25, 25, 0.4);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h2 { margin-bottom: 15px; font-weight: 600; }
+
+        /* Buttons & Inputs */
+        button {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            padding: 10px 15px;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 5px;
+        }
+        button:hover { background: rgba(255, 255, 255, 0.4); }
+        
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+        }
+
+        /* Timer Specifics */
+        #time-display {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+
+        /* To-Do Specifics */
+        ul { list-style: none; margin-top: 15px; text-align: left; }
+        li {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .completed { text-decoration: line-through; opacity: 0.5; }
+
+        /* Spotify Iframe */
+        #spotify-frame {
+            width: 100%;
+            height: 152px;
+            border-radius: 12px;
+            margin-top: 15px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="rain-overlay" id="rain"></div>
+
+    <header>
+        <h1>🎧 Focus Space</h1>
+        <div class="vibe-search">
+            <input type="text" id="vibe-input" placeholder="Type 'rain' or 'neon'...">
+        </div>
+    </header>
+
+    <div class="dashboard">
+        
+        <div class="widget">
+            <h2>⏱️ Pomodoro</h2>
+            <div id="time-display">25:00</div>
+            <button onclick="startTimer()">Start</button>
+            <button onclick="pauseTimer()">Pause</button>
+            <button onclick="resetTimer()">Reset</button>
+        </div>
+
+        <div class="widget">
+            <h2>📝 Tasks</h2>
+            <input type="text" id="task-input" placeholder="What needs doing?">
+            <button onclick="addTask()">Add</button>
+            <ul id="task-list"></ul>
+        </div>
+
+        <div class="widget">
+            <h2>🎵 Sound Station</h2>
+            <p style="font-size: 0.8rem; margin-bottom: 10px;">Paste a Spotify Playlist Link:</p>
+            <input type="text" id="spotify-input" placeholder="https://open.spotify.com/...">
+            <button onclick="loadSpotify()">Load</button>
+            <iframe id="spotify-frame" src="" frameBorder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 1. VIBE SEARCH LOGIC ---
+        const vibeInput = document.getElementById('vibe-input');
+        const body = document.body;
+        const rainOverlay = document.getElementById('rain');
+
+        vibeInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            if (val.includes('rain')) {
+                rainOverlay.style.display = 'block';
+            } else if (val.includes('neon') || val.includes('cyberpunk')) {
+                body.style.backgroundImage = "url('https://images.unsplash.com/photo-1555861496-faa3eafcb220?q=80&w=2073&auto=format&fit=crop')";
+                rainOverlay.style.display = 'none';
+            } else if (val.includes('clear')) {
+                body.style.backgroundImage = "url('https://images.unsplash.com/photo-1501339817388-d5937807ac02?q=80&w=2070&auto=format&fit=crop')";
+                rainOverlay.style.display = 'none';
+            }
+        });
+
+        // --- 2. TIMER LOGIC ---
+        let timeLeft = 25 * 60; // 25 minutes in seconds
+        let timerId = null;
+        const timeDisplay = document.getElementById('time-display');
+
+        function updateDisplay() {
+            const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const secs = (timeLeft % 60).toString().padStart(2, '0');
+            timeDisplay.textContent = `${mins}:${secs}`;
+        }
+
+        function startTimer() {
+            if (timerId !== null) return;
+            timerId = setInterval(() => {
+                timeLeft--;
+                updateDisplay();
+                if (timeLeft === 0) {
+                    clearInterval(timerId);
+                    timerId = null;
+                    alert("Time's up! Take a break.");
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            clearInterval(timerId);
+            timerId = null;
+        }
+
+        function resetTimer() {
+            pauseTimer();
+            timeLeft = 25 * 60;
+            updateDisplay();
+        }
+
+        // --- 3. TO-DO LIST LOGIC ---
+        function addTask() {
+            const input = document.getElementById('task-input');
+            const text = input.value.trim();
+            if (text === "") return;
+
+            const li = document.createElement('li');
+            li.textContent = text;
+            li.onclick = function() {
+                this.classList.toggle('completed');
+            };
+
+            document.getElementById('task-list').appendChild(li);
+            input.value = "";
+        }
+
+        // --- 4. SPOTIFY LOGIC ---
+        function loadSpotify() {
+            const inputUrl = document.getElementById('spotify-input').value;
+            const iframe = document.getElementById('spotify-frame');
+            
+            // Convert standard Spotify URL to embed URL
+            if(inputUrl.includes('spotify.com')) {
+                const embedUrl = inputUrl.replace("open.spotify.com", "open.spotify.com/embed");
+                iframe.src = embedUrl;
+                iframe.style.display = 'block';
+            } else {
+                alert("Please paste a valid Spotify link!");
+            }
+        }
+    </script>
+</body>
+</html>
