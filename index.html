@@ -16,7 +16,6 @@
         }
 
         body {
-            /* Default Background */
             background: url('https://images.unsplash.com/photo-1501339817388-d5937807ac02?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #fff;
@@ -38,7 +37,7 @@
             z-index: 1;
         }
 
-        /* --- HEADER & CUSTOMIZATION CONTROLS --- */
+        /* --- HEADER & CONTROLS --- */
         header {
             width: 100%;
             padding: 20px 40px;
@@ -57,7 +56,7 @@
             flex-wrap: wrap;
         }
 
-        .header-controls input[type="text"] {
+        .header-controls input[type="text"], .preset-dropdown {
             padding: 10px 20px;
             border-radius: 20px;
             border: none;
@@ -65,44 +64,21 @@
             color: #fff;
             backdrop-filter: blur(10px);
             outline: none;
-            width: 180px;
         }
-        .header-controls input[type="text"]::placeholder { color: #ddd; }
+        
+        .preset-dropdown option { background: #333; color: #fff; }
 
-        /* The Preset Dropdown */
-        .preset-dropdown {
-            padding: 10px 20px;
-            border-radius: 20px;
-            border: none;
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-            backdrop-filter: blur(10px);
-            outline: none;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
-        .preset-dropdown option {
-            background: #333; /* Dark background for options so text is readable */
-            color: #fff;
-        }
-
-        /* The Color Picker Box */
         input[type="color"] {
             -webkit-appearance: none;
             border: none;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 40px; height: 40px; border-radius: 50%;
             background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            cursor: pointer;
-            padding: 2px;
+            backdrop-filter: blur(10px); cursor: pointer; padding: 2px;
         }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 50%; }
 
-        /* The Upload Button */
-        .custom-file-upload {
+        .btn-style {
             padding: 10px 20px;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.2);
@@ -111,8 +87,9 @@
             cursor: pointer;
             font-size: 0.9rem;
             transition: 0.3s;
+            border: none;
         }
-        .custom-file-upload:hover { background: rgba(255, 255, 255, 0.4); }
+        .btn-style:hover { background: rgba(255, 255, 255, 0.4); }
 
         /* --- DASHBOARD WIDGETS --- */
         .dashboard {
@@ -138,62 +115,34 @@
 
         h2 { margin-bottom: 15px; font-weight: 600; }
 
-        button {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            padding: 10px 15px;
-            color: white;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.3s;
-            margin: 5px;
+        .widget button {
+            background: rgba(255, 255, 255, 0.2); border: none; padding: 10px 15px;
+            color: white; border-radius: 10px; cursor: pointer; transition: 0.3s; margin: 5px;
         }
-        button:hover { background: rgba(255, 255, 255, 0.4); }
+        .widget button:hover { background: rgba(255, 255, 255, 0.4); }
         
         .widget input[type="text"], .widget input[type="number"] {
-            padding: 10px;
-            border-radius: 10px;
-            border: none;
-            outline: none;
-            background: rgba(255, 255, 255, 0.8);
-            color: #333;
+            padding: 10px; border-radius: 10px; border: none; outline: none;
+            background: rgba(255, 255, 255, 0.8); color: #333;
         }
 
-        /* Pomodoro Timer Tweaks */
-        #time-display {
-            font-size: 3rem;
-            font-weight: bold;
-            margin: 10px 0;
-            letter-spacing: 2px;
-        }
-        .timer-settings {
-            margin-bottom: 15px;
-            font-size: 0.9rem;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            align-items: center;
-        }
+        /* Pomodoro Timer */
+        #time-display { font-size: 3rem; font-weight: bold; margin: 10px 0; letter-spacing: 2px; }
+        .timer-settings { display: flex; justify-content: center; gap: 10px; align-items: center; margin-bottom: 15px; }
         .timer-settings input { width: 60px; padding: 5px; text-align: center; }
 
         /* To-Do Tweaks */
         ul { list-style: none; margin-top: 15px; text-align: left; max-height: 180px; overflow-y: auto; }
         li {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: opacity 0.3s ease;
+            background: rgba(255, 255, 255, 0.1); padding: 10px; margin-bottom: 8px;
+            border-radius: 8px; display: flex; align-items: center; gap: 10px; transition: opacity 0.3s ease;
         }
         input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
-        /* YouTube Iframe */
-        .yt-frame {
+        /* Spotify Compact Iframe */
+        .spotify-frame {
             width: 100%;
-            height: 160px;
+            height: 152px; /* This specific height forces the compact UI from your screenshot */
             border-radius: 12px;
             margin-top: 10px;
             display: none;
@@ -207,7 +156,9 @@
     <header>
         <h1>🎧 Focus Space</h1>
         <div class="header-controls">
-            <input type="text" id="vibe-input" placeholder="Type 'rain' or 'clear'...">
+            <button class="btn-style" onclick="toggleFullScreen()">🔲 Zen Mode</button>
+
+            <input type="text" id="vibe-input" placeholder="Type 'rain' or 'clear'..." style="width: 150px;">
             
             <select id="preset-bg" class="preset-dropdown">
                 <option value="none">✨ Choose a Vibe...</option>
@@ -219,7 +170,7 @@
 
             <input type="color" id="bg-color" title="Change Background Color">
             
-            <label for="bg-upload" class="custom-file-upload">🖼️ Upload Image</label>
+            <label for="bg-upload" class="btn-style">🖼️ Upload</label>
             <input type="file" id="bg-upload" accept="image/*" style="display: none;">
         </div>
     </header>
@@ -247,46 +198,50 @@
 
         <div class="widget">
             <h2>🎵 Music Player</h2>
-            <p style="font-size: 0.8rem; margin-bottom: 10px;">Paste ANY YouTube link below:</p>
-            <input type="text" id="yt-input" placeholder="https://youtube.com/watch?v=..." style="width: 70%;">
-            <button onclick="loadYouTube()">Play</button>
-            <iframe id="yt-frame" class="yt-frame" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            <p style="font-size: 0.8rem; margin-bottom: 10px;">Paste a Spotify Link (Track or Playlist):</p>
+            <input type="text" id="spotify-input" placeholder="https://open.spotify.com/..." style="width: 70%;">
+            <button onclick="loadSpotify()">Load</button>
+            <iframe id="spotify-frame" class="spotify-frame" src="" frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
         </div>
 
     </div>
 
     <script>
-        // --- 1. BACKGROUND CUSTOMIZATION LOGIC ---
+        // --- 1. ZEN MODE (FULL SCREEN) ---
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch((err) => {
+                    alert(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // --- 2. BACKGROUND LOGIC ---
         const body = document.body;
         const rainOverlay = document.getElementById('rain');
         
-        // Vibe Search (Rain effect)
         document.getElementById('vibe-input').addEventListener('input', (e) => {
             const val = e.target.value.toLowerCase();
-            if (val.includes('rain')) {
-                rainOverlay.style.display = 'block';
-            } else if (val.includes('clear')) {
-                rainOverlay.style.display = 'none';
-            }
+            if (val.includes('rain')) { rainOverlay.style.display = 'block'; } 
+            else if (val.includes('clear')) { rainOverlay.style.display = 'none'; }
         });
 
-        // Preset Dropdown
         document.getElementById('preset-bg').addEventListener('change', (e) => {
-            const url = e.target.value;
-            if (url !== "none") {
-                body.style.background = `url('${url}') no-repeat center center fixed`;
+            if (e.target.value !== "none") {
+                body.style.background = `url('${e.target.value}') no-repeat center center fixed`;
                 body.style.backgroundSize = 'cover';
             }
         });
 
-        // Color Picker
         document.getElementById('bg-color').addEventListener('input', (e) => {
             body.style.background = e.target.value; 
             rainOverlay.style.display = 'none'; 
-            document.getElementById('preset-bg').value = "none"; // Reset dropdown
         });
 
-        // Image Upload
         document.getElementById('bg-upload').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (file) {
@@ -294,13 +249,12 @@
                 reader.onload = function(event) {
                     body.style.background = `url('${event.target.result}') no-repeat center center fixed`;
                     body.style.backgroundSize = 'cover';
-                    document.getElementById('preset-bg').value = "none"; // Reset dropdown
                 };
                 reader.readAsDataURL(file); 
             }
         });
 
-        // --- 2. POMODORO LOGIC ---
+        // --- 3. POMODORO LOGIC ---
         let timeLeft;
         let timerId = null;
         const timeDisplay = document.getElementById('time-display');
@@ -317,7 +271,6 @@
 
         function startTimer(isFocus) {
             if (timerId !== null) clearInterval(timerId); 
-            
             let minutes = isFocus ? focusInput.value : breakInput.value;
             timeLeft = parseInt(minutes) * 60;
             updateDisplay(timeLeft);
@@ -326,26 +279,21 @@
                 timeLeft--;
                 updateDisplay(timeLeft);
                 if (timeLeft <= 0) {
-                    clearInterval(timerId);
-                    timerId = null;
+                    clearInterval(timerId); timerId = null;
                     alert(isFocus ? "Focus time is up! Take a break." : "Break is over! Back to work.");
                 }
             }, 1000);
         }
 
-        function pauseTimer() {
-            clearInterval(timerId);
-            timerId = null;
-        }
+        function pauseTimer() { clearInterval(timerId); timerId = null; }
 
-        // --- 3. TO-DO LIST LOGIC ---
+        // --- 4. TO-DO LIST LOGIC ---
         function addTask() {
             const input = document.getElementById('task-input');
             const text = input.value.trim();
             if (text === "") return;
 
             const li = document.createElement('li');
-            
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
             checkbox.onchange = function() {
@@ -354,35 +302,29 @@
                     setTimeout(() => li.remove(), 300); 
                 }
             };
-
             const taskText = document.createElement('span');
             taskText.textContent = text;
-
-            li.appendChild(checkbox);
-            li.appendChild(taskText);
+            li.appendChild(checkbox); li.appendChild(taskText);
             document.getElementById('task-list').appendChild(li);
-            
             input.value = "";
         }
 
-        // --- 4. YOUTUBE LOGIC ---
-        function loadYouTube() {
-            const input = document.getElementById('yt-input').value;
-            const iframe = document.getElementById('yt-frame');
+        // --- 5. SPOTIFY LOGIC (COMPACT FIX) ---
+        function loadSpotify() {
+            let input = document.getElementById('spotify-input').value;
+            const iframe = document.getElementById('spotify-frame');
             
-            let videoId = "";
-            
-            if (input.includes("v=")) {
-                videoId = input.split("v=")[1].substring(0, 11);
-            } else if (input.includes("youtu.be/")) {
-                videoId = input.split("youtu.be/")[1].substring(0, 11);
-            }
-            
-            if (videoId) {
-                iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+            // This clever logic takes a normal share link and converts it into a working embed link
+            if (input.includes('spotify.com/')) {
+                // Strip off any extra tracking code like "?si=12345"
+                input = input.split('?')[0]; 
+                // Convert normal link to embed link
+                const embedUrl = input.replace('spotify.com/', 'spotify.com/embed/');
+                
+                iframe.src = embedUrl;
                 iframe.style.display = "block";
             } else {
-                alert("Please paste a valid YouTube link! Example: https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+                alert("Please paste a normal Spotify link! (e.g. Right-click a playlist -> Share -> Copy Link)");
             }
         }
     </script>
