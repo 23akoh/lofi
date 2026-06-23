@@ -16,6 +16,7 @@
         }
 
         body {
+            /* Default Background */
             background: url('https://images.unsplash.com/photo-1501339817388-d5937807ac02?q=80&w=2070&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
             color: #fff;
@@ -53,6 +54,7 @@
             display: flex;
             gap: 10px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .header-controls input[type="text"] {
@@ -66,6 +68,23 @@
             width: 180px;
         }
         .header-controls input[type="text"]::placeholder { color: #ddd; }
+
+        /* The Preset Dropdown */
+        .preset-dropdown {
+            padding: 10px 20px;
+            border-radius: 20px;
+            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: #fff;
+            backdrop-filter: blur(10px);
+            outline: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .preset-dropdown option {
+            background: #333; /* Dark background for options so text is readable */
+            color: #fff;
+        }
 
         /* The Color Picker Box */
         input[type="color"] {
@@ -190,6 +209,14 @@
         <div class="header-controls">
             <input type="text" id="vibe-input" placeholder="Type 'rain' or 'clear'...">
             
+            <select id="preset-bg" class="preset-dropdown">
+                <option value="none">✨ Choose a Vibe...</option>
+                <option value="https://images.unsplash.com/photo-1501339817388-d5937807ac02?q=80&w=2070&auto=format&fit=crop">☕ Cozy Cafe</option>
+                <option value="https://images.unsplash.com/photo-1555861496-faa3eafcb220?q=80&w=2073&auto=format&fit=crop">🌆 Cyberpunk City</option>
+                <option value="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?q=80&w=2070&auto=format&fit=crop">🌅 Sunset Chill</option>
+                <option value="https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?q=80&w=1974&auto=format&fit=crop">🌧️ Rainy Window</option>
+            </select>
+
             <input type="color" id="bg-color" title="Change Background Color">
             
             <label for="bg-upload" class="custom-file-upload">🖼️ Upload Image</label>
@@ -243,10 +270,20 @@
             }
         });
 
+        // Preset Dropdown
+        document.getElementById('preset-bg').addEventListener('change', (e) => {
+            const url = e.target.value;
+            if (url !== "none") {
+                body.style.background = `url('${url}') no-repeat center center fixed`;
+                body.style.backgroundSize = 'cover';
+            }
+        });
+
         // Color Picker
         document.getElementById('bg-color').addEventListener('input', (e) => {
-            body.style.background = e.target.value; // sets solid color
-            rainOverlay.style.display = 'none'; // clear rain to see color better
+            body.style.background = e.target.value; 
+            rainOverlay.style.display = 'none'; 
+            document.getElementById('preset-bg').value = "none"; // Reset dropdown
         });
 
         // Image Upload
@@ -257,8 +294,9 @@
                 reader.onload = function(event) {
                     body.style.background = `url('${event.target.result}') no-repeat center center fixed`;
                     body.style.backgroundSize = 'cover';
+                    document.getElementById('preset-bg').value = "none"; // Reset dropdown
                 };
-                reader.readAsDataURL(file); // Converts image so the browser can display it
+                reader.readAsDataURL(file); 
             }
         });
 
@@ -334,7 +372,6 @@
             
             let videoId = "";
             
-            // Extracts the 11-character video ID from standard or share links
             if (input.includes("v=")) {
                 videoId = input.split("v=")[1].substring(0, 11);
             } else if (input.includes("youtu.be/")) {
